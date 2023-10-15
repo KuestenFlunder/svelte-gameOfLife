@@ -1,37 +1,64 @@
 <script>
-    let url = 'ws://localhost:8080/gameoflife';
+    let url = "ws://localhost:8080/gameoflife";
     let playground = []; // To hold data sent from server
     let socket;
 
     function startGame() {
         socket = new WebSocket(url);
 
-        socket.onopen = function(event) {
+        socket.onopen = function (event) {
             console.log("Connection opened:", event);
-            // Assuming you want to send a message to the backend to start the game. 
-            // send the number of iterations you want to run the game for
             socket.send("10");
         };
 
-        socket.onmessage = function(event) {
+        socket.onmessage = function (event) {
             console.log("Message received:", event.data);
-            playground = JSON.parse(event.data);
-            
+            let rawData = JSON.parse(event.data).cellField;
+
+            let size = Math.sqrt(rawData.length); // assuming the playground is square
+            let transformedData = [];
+
+            for (let i = 0; i < size; i++) {
+                let row = [];
+                for (let j = 0; j < size; j++) {
+                    row.push(rawData[i * size + j]);
+                }
+                transformedData.push(row);
+            }
+
+            playground = transformedData;
         };
 
-        socket.onerror = function(error) {
+        socket.onerror = function (error) {
             console.error("WebSocket Error:", error);
         };
 
-        socket.onclose = function(event) {
+        socket.onclose = function (event) {
             if (event.wasClean) {
-                console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                console.log(
+                    `Connection closed cleanly, code=${event.code}, reason=${event.reason}`
+                );
             } else {
-                console.error('Connection died');
+                console.error("Connection died");
             }
         };
     }
 </script>
+
+<div>
+    <button on:click={startGame}>Start Game</button>
+
+    {#each playground as row, y}
+        <div>
+            {#each row as cell, x}
+                <div
+                    bind:this={cell}
+                    class="cell {cell.cellState === 'ALIVE' ? 'alive' : 'dead'}"
+                />
+            {/each}
+        </div>
+    {/each}
+</div>
 
 <style>
     .cell {
@@ -46,15 +73,3 @@
         background-color: white;
     }
 </style>
-
-<div>
-    <button on:click={startGame}>Start Game</button>
-    
-    {#each playground as row, y}
-        <div>
-            {#each row as cell, x}
-                <div bind:this={cell} class="cell {cell.cellState === 'ALIVE' ? 'alive' : 'dead'}"></div>
-            {/each}
-        </div>
-    {/each}
-</div>
