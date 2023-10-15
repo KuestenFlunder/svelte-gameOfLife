@@ -1,19 +1,29 @@
 <script>
+    import { writable } from "svelte/store";
+
     let url = "ws://localhost:8080/gameoflife";
-    let playground = []; // To hold data sent from server
+    let playground = writable([]); // Use Svelte store for reactivity
+
     let socket;
 
     function startGame() {
         socket = new WebSocket(url);
 
-        socket.onopen = function (event) {
+        socket.onopen = (event) => {
             console.log("Connection opened:", event);
             socket.send("10");
         };
 
-        socket.onmessage = function (event) {
+        socket.onmessage = (event) => {
             console.log("Message received:", event.data);
-            let rawData = JSON.parse(event.data).cellField;
+            let rawData;
+
+            try {
+                rawData = JSON.parse(event.data).cellField;
+            } catch (e) {
+                console.error("Error parsing the JSON data:", e);
+                return;
+            }
 
             let size = Math.sqrt(rawData.length); // assuming the playground is square
             let transformedData = [];
@@ -26,14 +36,14 @@
                 transformedData.push(row);
             }
 
-            playground = transformedData;
+            $playground = transformedData;
         };
 
-        socket.onerror = function (error) {
+        socket.onerror = (error) => {
             console.error("WebSocket Error:", error);
         };
 
-        socket.onclose = function (event) {
+        socket.onclose = (event) => {
             if (event.wasClean) {
                 console.log(
                     `Connection closed cleanly, code=${event.code}, reason=${event.reason}`
@@ -45,24 +55,50 @@
     }
 </script>
 
+<div>
+    <button on:click={startGame}>Start Game</button>
+
+    <div class="grid">
+        {#each $playground as row, y}
+            <div class="row">
+                {#each row as cell, x}
+                    <div
+                        bind:this={cell}
+                        class="cell {cell.cellState === 'ALIVE'
+                            ? 'alive'
+                            : 'dead'}"
+                    >
+                        
+                    </div>
+                {/each}
+            </div>
+        {/each}
+    </div>
+</div>
+
 <style>
     .grid {
         display: flex;
         flex-direction: column;
+        justify-content: center;
+        align-items: center; /* add this line to center the grid horizontally */
+        height: 100vh; /* add this line to make the grid take up the full height of the viewport */
     }
 
     .row {
         display: flex;
     }
 
+   
     .cell {
-        width: 30px; /* or any other value */
+        width: 30px;
         height: 30px;
         border: 1px solid #ccc;
         display: flex;
         justify-content: center;
         align-items: center;
     }
+    
 
     .alive {
         background-color: green;
@@ -72,22 +108,3 @@
         background-color: white;
     }
 </style>
-
-<div>
-    <button on:click={startGame}>Start Game</button>
-
-    <div class="grid">
-        {#each playground as row, y}
-            <div class="row">
-                {#each row as cell, x}
-                    <div
-                        bind:this={cell}
-                        class="cell {cell.cellState === 'ALIVE' ? 'alive' : 'dead'}"
-                    >
-                    {cell.point.x}, {cell.point.y}
-                    </div>
-                {/each}
-            </div>
-        {/each}
-    </div>
-</div>
