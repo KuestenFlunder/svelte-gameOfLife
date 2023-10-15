@@ -45,31 +45,49 @@
     }
 </script>
 
-<div>
-    <button on:click={startGame}>Start Game</button>
-
-    {#each playground as row, y}
-        <div>
-            {#each row as cell, x}
-                <div
-                    bind:this={cell}
-                    class="cell {cell.cellState === 'ALIVE' ? 'alive' : 'dead'}"
-                />
-            {/each}
-        </div>
-    {/each}
-</div>
-
 <style>
+    .grid {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .row {
+        display: flex;
+    }
+
     .cell {
-        width: 20px;
-        height: 20px;
-        border: 1px solid black;
+        width: 30px; /* or any other value */
+        height: 30px;
+        border: 1px solid #ccc;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
+
     .alive {
-        background-color: black;
+        background-color: green;
     }
+
     .dead {
         background-color: white;
     }
 </style>
+
+<div>
+    <button on:click={startGame}>Start Game</button>
+
+    <div class="grid">
+        {#each playground as row, y}
+            <div class="row">
+                {#each row as cell, x}
+                    <div
+                        bind:this={cell}
+                        class="cell {cell.cellState === 'ALIVE' ? 'alive' : 'dead'}"
+                    >
+                    {cell.point.x}, {cell.point.y}
+                    </div>
+                {/each}
+            </div>
+        {/each}
+    </div>
+</div>
