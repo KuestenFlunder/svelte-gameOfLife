@@ -11,7 +11,7 @@
 
         socket.onopen = (event) => {
             console.log("Connection opened:", event);
-            socket.send("10");
+            socket.send("30");
         };
 
         socket.onmessage = (event) => {
@@ -68,7 +68,7 @@
                             ? 'alive'
                             : 'dead'}"
                     >
-                        
+                    <!-- {cell.point.x}, {cell.point.y} -->
                     </div>
                 {/each}
             </div>
