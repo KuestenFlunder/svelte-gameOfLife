@@ -1,5 +1,5 @@
 # Build stage: Install dependencies and build the Svelte app
-FROM node:19.8.1 AS build
+FROM node:18.18.2 AS build
 
 # Set the working directory
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Production stage: Serve the Svelte app using a lightweight node server (like serve)
-FROM node:19.8.1
+FROM node:18.18.2
 
 # Install 'serve' to run our application
 RUN npm install -g serve
