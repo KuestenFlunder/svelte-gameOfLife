@@ -3,7 +3,7 @@
 
     let url = "ws://localhost:8080/gameoflife";
     let playground = writable([]); // Use Svelte store for reactivity
-
+    let rounds = 1;
     let socket;
 
     function startGame() {
@@ -11,7 +11,8 @@
 
         socket.onopen = (event) => {
             console.log("Connection opened:", event);
-            socket.send("30");
+           
+             socket.send(String(rounds));
         };
 
         socket.onmessage = (event) => {
@@ -56,8 +57,9 @@
 </script>
 
 <div>
+    
     <button on:click={startGame}>Start Game</button>
-
+    <input type="number" id="rounds" bind:value={rounds} />
     <div class="grid">
         {#each $playground as row, y}
             <div class="row">
